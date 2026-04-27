@@ -147,9 +147,6 @@ local function CreateToggle(Parent, Name, Default, Callback)
     Checkbox.MouseButton1Click:Connect(Fire)
 end
 
--- =============================================
---      SLIDER SUPREMO (ARRASTE + TEXTBOX DE VALOR EXATO)
--- =============================================
 local function CreateSlider(Parent, Name, Min, Max, Default, Callback)
     local Frame = Instance.new("Frame")
     Frame.Size = UDim2.new(1, 0, 0, 35); Frame.BackgroundTransparency = 1; Frame.Parent = Parent
@@ -258,7 +255,7 @@ TabButtons[1].TextColor3 = Color3.new(1,1,1); TabButtons[1]:FindFirstChildWhichI
 -- =============================================
 
 local function GetAimbotPart(char)
-    -- MIRA NO TRONCO/ROOTPART PARA ESTABILIDADE TOTAL
+    -- MIRA FOCADA NO TRONCO PARA MAIOR ESTABILIDADE (R15 e R6)
     return char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart")
 end
 
@@ -267,6 +264,7 @@ local function GetPing()
     return success and (ping / 1000) or 0.1
 end
 
+-- ====== NOVO SISTEMA DE PREDIÇÃO (FÍSICA REAL) ======
 local function GetPredictedPosition(Target)
     local TargetPart = GetAimbotPart(Target.Character)
     if not TargetPart then return Target.Character:GetPivot().Position end
@@ -275,13 +273,26 @@ local function GetPredictedPosition(Target)
         return TargetPart.Position 
     end
 
-    local Distance = (Camera.CFrame.Position - TargetPart.Position).Magnitude
+    local Origin = Camera.CFrame.Position
+    local TargetPos = TargetPart.Position
+    local Velocity = TargetPart.AssemblyLinearVelocity or Vector3.new(0,0,0)
+    
+    -- Distância e tempo base
+    local Distance = (Origin - TargetPos).Magnitude
     local TimeToTarget = Distance / _G.BulletSpeed
     local TotalTime = TimeToTarget + GetPing()
     
-    local Velocity = TargetPart.AssemblyLinearVelocity or Vector3.new(0,0,0)
-    return TargetPart.Position + (Velocity * TotalTime)
+    -- A gravidade padrão do Roblox é 196.2.
+    -- Como a bala cai, precisamos mirar PARA CIMA para compensar.
+    -- Multiplicamos pelo Slider de BulletDrop da sua UI.
+    local CompensationForce = Vector3.new(0, (_G.BulletDrop * 196.2), 0)
+    
+    -- Fórmula: Posição + (Velocidade * Tempo) + (0.5 * Compensação_Gravidade * Tempo^2)
+    local PredictedPos = TargetPos + (Velocity * TotalTime) + (0.5 * CompensationForce * (TotalTime ^ 2))
+
+    return PredictedPos
 end
+-- ====================================================
 
 local function GetClosestPlayer()
     local Target, MaxDist = nil, _G.FOV
@@ -296,7 +307,6 @@ local function GetClosestPlayer()
 
             if not AimPart or (_G.TeamCheck and IsTeammate) then continue end
             
-            -- LÓGICA DE DISTÂNCIA MÁXIMA (3D) DO AIMBOT
             local RealDist = (Camera.CFrame.Position - AimPart.Position).Magnitude
             if RealDist > _G.MaxDistance then continue end
             
@@ -465,18 +475,20 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
         end
     end
 
-    -- PEQUENO PREDICT NA CÂMERA (0.135: GOD PREDICT PARA 100 DE SMOOTHNESS)
+    -- ====== NOVA TRAVA DE MIRA (100% SMOOTHNESS) ======
     if _G.AimbotEnabled and CachedTarget and CachedTarget.Character then
-        local AimPart = GetAimbotPart(CachedTarget.Character)
-        if AimPart then
-            local CameraAimPos = AimPart.Position
-            if _G.PredictionEnabled then
-                local Velocity = AimPart.AssemblyLinearVelocity or Vector3.new(0,0,0)
-                CameraAimPos = AimPart.Position + (Velocity * 0.135) 
+        if CachedPredPos then
+            local TargetCF = CFrame.new(Camera.CFrame.Position, CachedPredPos)
+            
+            -- Se o slider estiver no 100 (valor 1.0), trava instantâneo na predição
+            if _G.Smoothness >= 1 then
+                Camera.CFrame = TargetCF
+            else
+                Camera.CFrame = Camera.CFrame:Lerp(TargetCF, _G.Smoothness)
             end
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, CameraAimPos), _G.Smoothness)
         end
     end
+    -- ===================================================
 end)
 
 UserInputService.InputBegan:Connect(function(input) if input.KeyCode == Enum.KeyCode.Insert then ToggleGUI() end end)
