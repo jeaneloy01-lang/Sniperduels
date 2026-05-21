@@ -67,7 +67,7 @@ local Theme = {
 }
 
 local OpenButton = Instance.new("TextButton")
-OpenButton.Size = UDim2.new(0, 45, 0, 45); OpenButton.Position = UDim2.new(0.05, 0, 0.05, 0); OpenButton.BackgroundColor3 = Theme.Bg; OpenButton.Text = "EH"; OpenButton.TextColor3 = Theme.Accent; OpenButton.Font = Enum.Font.GothamBold; OpenButton.Visible = false; OpenButton.Active = true; OpenButton.Draggable = true; OpenButton.Parent = ScreenGui; Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(0, 8); local OpenStroke = Instance.new("UIStroke", OpenButton); OpenStroke.Color = Theme.Accent; OpenStroke.Thickness = 2
+OpenButton.Size = UDim2.new(0, 45, 0, 45); OpenButton.Position = UDim2.new(0.05, 0, 0.05, 0); OpenButton.BackgroundColor3 = Theme.Bg; OpenButton.Text = "LH"; OpenButton.TextColor3 = Theme.Accent; OpenButton.Font = Enum.Font.GothamBold; OpenButton.Visible = false; OpenButton.Active = true; OpenButton.Draggable = true; OpenButton.Parent = ScreenGui; Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(0, 8); local OpenStroke = Instance.new("UIStroke", OpenButton); OpenStroke.Color = Theme.Accent; OpenStroke.Thickness = 2
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 500, 0, 350); MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175); MainFrame.BackgroundColor3 = Theme.Bg; MainFrame.BorderSizePixel = 0; MainFrame.Active = true; MainFrame.Draggable = true; MainFrame.Parent = ScreenGui; Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 6)
@@ -226,11 +226,11 @@ CreateSlider(R1, "Bullet Drop", 0, 100, 0, function(v) _G.BulletDrop = v / 10 en
 
 -- Aba Visuals
 CreateSectionLabel(L2, "ESP Elements")
-CreateToggle(L2, "Box", false, function(v) _G.ESP_Box = v end)
-CreateToggle(L2, "Skeleton Stickman", false, function(v) _G.ESP_Skeleton = v end)
+CreateToggle(L2, "ESP Box", false, function(v) _G.ESP_Box = v end)
+CreateToggle(L2, "ESP Skeleton", false, function(v) _G.ESP_Skeleton = v end)
 CreateToggle(L2, "HealthBar", false, function(v) _G.ESP_HealthBar = v end)
-CreateToggle(L2, "Name", false, function(v) _G.ESP_Name = v end)
-CreateToggle(L2, "Tracers", false, function(v) _G.ESP_Tracers = v end)
+CreateToggle(L2, "ESP Name", false, function(v) _G.ESP_Name = v end)
+CreateToggle(L2, "ESP Line", false, function(v) _G.ESP_Tracers = v end)
 CreateToggle(L2, "ESP Team Check", false, function(v) _G.ESP_TeamCheck = v end)
 CreateSlider(L2, "ESP Max Distance", 1, 3000, 3000, function(v) _G.ESP_MaxDistance = v end)
 
