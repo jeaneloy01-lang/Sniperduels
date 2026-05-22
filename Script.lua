@@ -16,6 +16,8 @@ local Mouse = LocalPlayer:GetMouse()
 -- =============================================
 _G.AimbotEnabled = false
 _G.SilentAimEnabled = false
+_G.AimbotType = "Aimbot Legit"
+_G.SilentAimType = "Silent Legit"
 _G.TeamCheck = false 
 _G.WallCheck = false
 _G.Smoothness = 1 
@@ -25,6 +27,7 @@ _G.BulletSpeed = 2500
 _G.BulletDrop = 0 
 _G.ShowFOV = false
 _G.FOV = 100
+_G.CurrentPing = 0.1
 
 -- Hitbox
 _G.HitboxEnabled = false
@@ -56,7 +59,9 @@ _G.ESP_MaxDistance = 3000
 
 local ESP_Table = {}
 local CachedTarget = nil
-local CachedPredPos = nil
+local CachedAimbotPos = nil
+local CachedSilentPos = nil
+local CachedSilentPart = nil
 local ActiveSlider = nil 
 
 -- =============================================
@@ -82,7 +87,7 @@ local success = pcall(function()
 end)
 if not success or not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Cores
+-- Cores originais (Sidebar = 10,10,10 / Fundo = 15,15,15)
 local Theme = {
     Bg = Color3.fromRGB(15, 15, 15),           
     Sidebar = Color3.fromRGB(10, 10, 10),          
@@ -171,8 +176,8 @@ local function CreateTab(Name)
     RightCol.Size = UDim2.new(0.48, 0, 1, 0); RightCol.Position = UDim2.new(0.52, 0, 0, 0); RightCol.BackgroundTransparency = 1; RightCol.ScrollBarThickness = 0
     local RightLayout = Instance.new("UIListLayout", RightCol); RightLayout.Padding = UDim.new(0, 8)
 
-    LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() LeftCol.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 100) end)
-    RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() RightCol.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 100) end)
+    LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() LeftCol.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 120) end)
+    RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() RightCol.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 120) end)
 
     TabBtn.MouseButton1Click:Connect(function()
         for _, p in pairs(Pages) do p.Visible = false end
@@ -185,7 +190,7 @@ local function CreateTab(Name)
 end
 
 -- =============================================
--- ELEMENTOS COM MARGEM DE SEGURANÇA
+-- ELEMENTOS COM MARGEM DE SEGURANÇA E NOVO DESIGN
 -- =============================================
 local function CreateSectionLabel(Parent, Text)
     local Lbl = Instance.new("TextLabel", Parent)
@@ -254,9 +259,7 @@ local function CreateDropdown(Parent, Name, Options, DefaultIndex, Callback)
     end
 end
 
--- =============================================
 -- NOVO ESTILO DE SLIDER (BARRA GROSSA)
--- =============================================
 local function CreateSlider(Parent, Name, Min, Max, Default, Callback, Suffix)
     Suffix = Suffix or "" 
     local Frame = Instance.new("Frame", Parent)
@@ -268,18 +271,16 @@ local function CreateSlider(Parent, Name, Min, Max, Default, Callback, Suffix)
     local ValInput = Instance.new("TextBox", Frame)
     ValInput.Text = tostring(Default) .. Suffix; ValInput.Size = UDim2.new(0.3, 0, 0, 15); ValInput.Position = UDim2.new(0.7, -5, 0, 0); ValInput.BackgroundTransparency = 1; ValInput.Font = Enum.Font.Gotham; ValInput.TextColor3 = Theme.DarkText; ValInput.TextSize = 11; ValInput.TextXAlignment = Enum.TextXAlignment.Right; ValInput.ClearTextOnFocus = false
 
-    -- O TRILHO DO SLIDER (Grossura e cor alteradas)
     local SliderBg = Instance.new("Frame", Frame)
-    SliderBg.Size = UDim2.new(1, 0, 0, 10); -- Aumentado de 4 para 10 pixels de altura
+    SliderBg.Size = UDim2.new(1, 0, 0, 10); 
     SliderBg.Position = UDim2.new(0, 0, 0, 22); 
-    SliderBg.BackgroundColor3 = Color3.fromRGB(8, 8, 8); -- Fundo quase preto para contrastar
+    SliderBg.BackgroundColor3 = Color3.fromRGB(8, 8, 8); 
     SliderBg.BorderSizePixel = 0; 
-    Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(0, 3) -- Levemente arredondado
+    Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(0, 3) 
 
-    -- A BARRA DE PREENCHIMENTO VERMELHA
     local Fill = Instance.new("Frame", SliderBg)
     Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0); 
-    Fill.BackgroundColor3 = Theme.Accent; -- O seu vermelho padrão
+    Fill.BackgroundColor3 = Theme.Accent; 
     Fill.BorderSizePixel = 0; 
     Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 3)
 
@@ -331,14 +332,17 @@ local L3, R3 = CreateTab("MISC")
 
 -- Aba Combat
 CreateSectionLabel(L1, "Combat")
-CreateToggle(L1, "Aimbot Rage", false, function(v) _G.AimbotEnabled = v end)
-CreateToggle(L1, "Silent Aim", false, function(v) _G.SilentAimEnabled = v end)
+CreateToggle(L1, "Enable Aimbot", false, function(v) _G.AimbotEnabled = v end)
+CreateToggle(L1, "Enable Silent Aim", false, function(v) _G.SilentAimEnabled = v end)
 CreateToggle(L1, "Aimbot Team Check", false, function(v) _G.TeamCheck = v end)
 CreateToggle(L1, "Wall Check", false, function(v) _G.WallCheck = v end)
 CreateSlider(L1, "Max Distance", 1, 3000, 3000, function(v) _G.MaxDistance = v end)
 CreateSlider(L1, "Smoothness", 1, 100, 100, function(v) _G.Smoothness = v / 100 end)
 
+-- Dropdowns de Tipo adicionados no Aimbot Settings
 CreateSectionLabel(R1, "Aimbot Settings")
+CreateDropdown(R1, "Type Aimbot", {"Aimbot Legit", "Aimbot Rage"}, 1, function(val) _G.AimbotType = val end)
+CreateDropdown(R1, "Type Silent Aim", {"Silent Legit", "Silent Rage"}, 1, function(val) _G.SilentAimType = val end)
 CreateToggle(R1, "Enable Prediction", true, function(v) _G.PredictionEnabled = v end)
 CreateSlider(R1, "Bullet Speed", 100, 5000, 2500, function(v) _G.BulletSpeed = v end)
 CreateSlider(R1, "Bullet Drop", 0, 100, 0, function(v) _G.BulletDrop = v / 10 end)
@@ -357,7 +361,7 @@ CreateToggle(L2, "Esp Line", false, function(v) _G.ESP_Tracers = v end)
 CreateToggle(L2, "Esp Team Check", false, function(v) _G.ESP_TeamCheck = v end)
 CreateSlider(L2, "Esp Max Distance", 1, 3000, 3000, function(v) _G.ESP_MaxDistance = v end)
 
-CreateSectionLabel(R2, "Config")
+CreateSectionLabel(R2, "ESP Config")
 CreateDropdown(R2, "Type Box", {"Box Corner", "Box Normal"}, 1, function(val) _G.ESP_BoxType = val end)
 CreateDropdown(R2, "Type Line", {"Bottom", "Top"}, 1, function(val) _G.ESP_LineType = val end)
 CreateDropdown(R2, "Type Health", {"Top", "Bottom", "Left", "Right"}, 1, function(val) _G.ESP_HealthType = val end)
@@ -381,17 +385,16 @@ TabButtons[1].TextColor3 = Color3.new(1,1,1); TabButtons[1]:FindFirstChildWhichI
 -- =============================================
 --                 LÓGICA MATEMÁTICA
 -- =============================================
-local function GetAimbotPart(char)
+
+local function GetTargetPart(char, aimType)
+    if aimType == "Aimbot Rage" or aimType == "Silent Rage" then
+        return char:FindFirstChild("Head") or char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart")
+    end
     return char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso") or char:FindFirstChild("HumanoidRootPart")
 end
 
-local function GetPing()
-    local success, ping = pcall(function() return Stats.Network.ServerStatsItem["Data Ping"]:GetValue() end)
-    return success and (ping / 1000) or 0.1
-end
-
-local function GetPredictedPosition(Target)
-    local TargetPart = GetAimbotPart(Target.Character)
+local function GetPredictedPosition(Target, aimType)
+    local TargetPart = GetTargetPart(Target.Character, aimType)
     if not TargetPart then return Target.Character:GetPivot().Position end
     if not _G.PredictionEnabled then return TargetPart.Position end
 
@@ -401,7 +404,7 @@ local function GetPredictedPosition(Target)
     
     local Distance = (Origin - TargetPos).Magnitude
     local TimeToTarget = Distance / _G.BulletSpeed
-    local TotalTime = TimeToTarget + GetPing()
+    local TotalTime = TimeToTarget + _G.CurrentPing
     
     local CompensationForce = Vector3.new(0, (_G.BulletDrop * 196.2), 0)
     return TargetPos + (Velocity * TotalTime) + (0.5 * CompensationForce * (TotalTime ^ 2))
@@ -411,7 +414,7 @@ local function GetClosestPlayer()
     local Target, MaxDist = nil, _G.FOV
     for _, v in pairs(Players:GetPlayers()) do
         if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
-            local AimPart = GetAimbotPart(v.Character)
+            local AimPart = GetTargetPart(v.Character, "Aimbot Legit") 
             local IsTeammate = (LocalPlayer.Team ~= nil and v.Team ~= nil and LocalPlayer.Team == v.Team)
 
             if not AimPart or (_G.TeamCheck and IsTeammate) then continue end
@@ -480,6 +483,9 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1, function()
+    local success, ping = pcall(function() return Stats.Network.ServerStatsItem["Data Ping"]:GetValue() end)
+    _G.CurrentPing = success and (ping / 1000) or 0.1
+
     -- FOV
     FOVCircle.Visible = _G.ShowFOV; FOVCircle.Radius = _G.FOV; FOVCircle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2); FOVCircle.Color = Color3.new(1,1,1); FOVCircle.Thickness = 1; FOVCircle.Filled = false; FOVCircle.NumSides = 64
     MagnetFOV.Visible = _G.MagnetFOVEnabled; MagnetFOV.Radius = _G.MagnetFOV; MagnetFOV.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2); MagnetFOV.Color = Theme.Accent; MagnetFOV.Thickness = 1; MagnetFOV.Filled = false; MagnetFOV.NumSides = 64
@@ -537,7 +543,7 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
         end
     end
 
-    -- Magnet Logic NO WALL CHECK (Desliga colisões pra puxar)
+    -- Magnet Logic NO WALL CHECK
     if _G.MagnetKill and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local KP = Camera.CFrame * CFrame.new(0, 0, -12)
@@ -581,21 +587,31 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
         end
     end
 
-    -- LÓGICA DE ATUALIZAÇÃO DO AIMBOT
+    -- CACHE DO AIMBOT (CALCULA SÓ 1 VEZ POR FRAME)
     if _G.AimbotEnabled or _G.SilentAimEnabled then
         CachedTarget = GetClosestPlayer()
         if CachedTarget and CachedTarget.Character then
-            CachedPredPos = GetPredictedPosition(CachedTarget)
+            if _G.AimbotEnabled then
+                CachedAimbotPos = GetPredictedPosition(CachedTarget, _G.AimbotType)
+            end
+            if _G.SilentAimEnabled then
+                CachedSilentPos = GetPredictedPosition(CachedTarget, _G.SilentAimType)
+                CachedSilentPart = GetTargetPart(CachedTarget.Character, _G.SilentAimType)
+            end
         else
-            CachedPredPos = nil
+            CachedAimbotPos = nil
+            CachedSilentPos = nil
+            CachedSilentPart = nil
         end
     else
         CachedTarget = nil
-        CachedPredPos = nil
+        CachedAimbotPos = nil
+        CachedSilentPos = nil
+        CachedSilentPart = nil
     end
 
-    if _G.AimbotEnabled and CachedTarget and CachedTarget.Character and CachedPredPos then
-        local TargetCF = CFrame.new(Camera.CFrame.Position, CachedPredPos)
+    if _G.AimbotEnabled and CachedTarget and CachedAimbotPos then
+        local TargetCF = CFrame.new(Camera.CFrame.Position, CachedAimbotPos)
         if _G.Smoothness >= 1 then 
             Camera.CFrame = TargetCF 
         else 
@@ -605,24 +621,24 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
 end)
 
 -- =============================================
--- HOOKS
+-- HOOKS DE SILENT AIM (Otimizados: Só leem o cache)
 -- =============================================
 local OldNamecall
 OldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
     local Method = getnamecallmethod()
     local Args = {...}
     
-    if _G.SilentAimEnabled and CachedTarget and CachedPredPos then
+    if _G.SilentAimEnabled and CachedTarget and CachedSilentPos and CachedSilentPart then
         if Method == "FireServer" or Method == "InvokeServer" then
             for i, arg in pairs(Args) do
-                if typeof(arg) == "Vector3" then Args[i] = CachedPredPos
-                elseif typeof(arg) == "CFrame" then Args[i] = CFrame.new(Camera.CFrame.Position, CachedPredPos)
-                elseif typeof(arg) == "Instance" and arg:IsA("BasePart") then Args[i] = GetAimbotPart(CachedTarget.Character) end
+                if typeof(arg) == "Vector3" then Args[i] = CachedSilentPos
+                elseif typeof(arg) == "CFrame" then Args[i] = CFrame.new(Camera.CFrame.Position, CachedSilentPos)
+                elseif typeof(arg) == "Instance" and arg:IsA("BasePart") then Args[i] = CachedSilentPart end
             end
             return OldNamecall(self, unpack(Args))
         end
         if Method == "Raycast" and self == workspace then
-            Args[2] = (CachedPredPos - Args[1]).Unit * Args[2].Magnitude
+            Args[2] = (CachedSilentPos - Args[1]).Unit * Args[2].Magnitude
             return OldNamecall(self, unpack(Args))
         end
     end
@@ -631,9 +647,9 @@ end)
 
 local OldIndex
 OldIndex = hookmetamethod(game, "__index", function(self, Index)
-    if self == Mouse and _G.SilentAimEnabled and CachedTarget and CachedPredPos then
-        if Index == "Hit" then return CFrame.new(CachedPredPos)
-        elseif Index == "Target" then return GetAimbotPart(CachedTarget.Character) end
+    if self == Mouse and _G.SilentAimEnabled and CachedTarget and CachedSilentPos and CachedSilentPart then
+        if Index == "Hit" then return CFrame.new(CachedSilentPos)
+        elseif Index == "Target" then return CachedSilentPart end
     end
     return OldIndex(self, Index)
 end)
