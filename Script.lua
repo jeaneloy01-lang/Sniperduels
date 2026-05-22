@@ -1,5 +1,5 @@
 -- ==============================================================================
---                 Low High Hub - SNIPER DUELS / PRISON (PERFECT MOBILE EDITION - V16 FINAL)
+--                 ELITE HUB - SNIPER DUELS / PRISON (PERFECT MOBILE EDITION - V16 FINAL)
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -37,7 +37,7 @@ _G.MagnetKill = false
 _G.MagnetTeamCheck = false
 _G.MagnetFOVEnabled = false
 _G.MagnetFOV = 100
-_G.MagnetMaxDistance = 50
+_G.MagnetMaxDistance = 500 -- Agora começa em 500
 
 -- Visuals (ESP)
 _G.ESP_Box = false        
@@ -321,7 +321,8 @@ CreateToggle(R3, "Enable Magnet Kill", false, function(v) _G.MagnetKill = v end)
 CreateToggle(R3, "Magnet Team Check", false, function(v) _G.MagnetTeamCheck = v end)
 CreateToggle(R3, "Enable Magnet FOV", false, function(v) _G.MagnetFOVEnabled = v end)
 CreateSlider(R3, "Magnet FOV Radius", 0, 500, 100, function(v) _G.MagnetFOV = v end)
-CreateSlider(R3, "Magnet Max Dist", 1, 100, 50, function(v) _G.MagnetMaxDistance = v end)
+-- AUMENTADO PARA 3000 O LIMITE DO MAGNET
+CreateSlider(R3, "Magnet Max Dist", 1, 3000, 500, function(v) _G.MagnetMaxDistance = v end)
 
 TabButtons[1].TextColor3 = Color3.new(1,1,1); TabButtons[1]:FindFirstChildWhichIsA("Frame").Visible = true; Pages[1].Visible = true
 
@@ -523,7 +524,7 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
         end
     end
 
-    -- Magnet Logic
+    -- Magnet Logic NO WALL CHECK (Desliga colisões pra puxar)
     if _G.MagnetKill and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local KP = Camera.CFrame * CFrame.new(0, 0, -12)
@@ -536,7 +537,12 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
 
                     if (not _G.MagnetTeamCheck or not IsTeammate) and v.Character.Humanoid.Health > 0 and not v.Character.Humanoid.Sit then
                         if dist <= _G.MagnetMaxDistance and (not _G.MagnetFOVEnabled or fovDist <= _G.MagnetFOV) then
-                            v.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0); v.Character.HumanoidRootPart.CFrame = CFrame.new(KP.Position, Camera.CFrame.Position)
+                            -- Desliga as colisões para ele atravessar paredes sem agarrar
+                            for _, part in pairs(v.Character:GetChildren()) do
+                                if part:IsA("BasePart") then part.CanCollide = false end
+                            end
+                            v.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+                            v.Character.HumanoidRootPart.CFrame = CFrame.new(KP.Position, Camera.CFrame.Position)
                         end
                     end
                 end
@@ -591,35 +597,18 @@ end)
 UserInputService.InputBegan:Connect(function(input) if input.KeyCode == Enum.KeyCode.Insert then ToggleGUI() end end)
 
 -- =============================================
---      SILENT AIM SUPREMO (HOOK TOTAL)
+-- MOUSE SILENT AIM (HOOK SEGURO - NÃO TRAVA A ARMA)
 -- =============================================
-local OldNamecall
-OldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-    local Method = getnamecallmethod()
-    local Args = {...}
+local OldIndex = nil
+OldIndex = hookmetamethod(game, "__index", newcclosure(function(self, Index)
+    if _G.SilentAimEnabled and self == Mouse and CachedTarget and CachedPredPos then
+        if Index == "Hit" then 
+            return CFrame.new(CachedPredPos)
+        elseif Index == "Target" then 
+            local targetPart = CachedTarget.Character and (CachedTarget.Character:FindFirstChild("UpperTorso") or CachedTarget.Character:FindFirstChild("Torso") or CachedTarget.Character:FindFirstChild("HumanoidRootPart"))
+            return targetPart
+        end
+    end
     
-    if _G.SilentAimEnabled and CachedTarget and CachedPredPos then
-        if Method == "FireServer" or Method == "InvokeServer" then
-            for i, arg in pairs(Args) do
-                if typeof(arg) == "Vector3" then Args[i] = CachedPredPos
-                elseif typeof(arg) == "CFrame" then Args[i] = CFrame.new(Camera.CFrame.Position, CachedPredPos)
-                elseif typeof(arg) == "Instance" and arg:IsA("BasePart") then Args[i] = GetAimbotPart(CachedTarget.Character) end
-            end
-            return OldNamecall(self, unpack(Args))
-        end
-        if Method == "Raycast" and self == workspace then
-            Args[2] = (CachedPredPos - Args[1]).Unit * Args[2].Magnitude
-            return OldNamecall(self, unpack(Args))
-        end
-    end
-    return OldNamecall(self, ...)
-end)
-
-local OldIndex
-OldIndex = hookmetamethod(game, "__index", function(self, Index)
-    if self == Mouse and _G.SilentAimEnabled and CachedTarget and CachedPredPos then
-        if Index == "Hit" then return CFrame.new(CachedPredPos)
-        elseif Index == "Target" then return GetAimbotPart(CachedTarget.Character) end
-    end
     return OldIndex(self, Index)
-end)
+end))
