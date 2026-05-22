@@ -1,5 +1,5 @@
 -- ==============================================================================
---                 ELITE HUB - SNIPER DUELS / PRISON (PERFECT MOBILE EDITION - V16 FINAL)
+--                 LOW HIGH ADMIN - VITALÍCIO (SNIPER DUELS / PRISON)
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -30,14 +30,14 @@ _G.FOV = 100
 _G.HitboxEnabled = false
 _G.HitboxSize = 5 
 _G.HitboxTeamCheck = false 
-_G.HitboxColor = Color3.fromRGB(255, 255, 255) 
+_G.HitboxColor = Color3.fromRGB(255, 0, 0) 
 
 -- Magnet
 _G.MagnetKill = false
 _G.MagnetTeamCheck = false
 _G.MagnetFOVEnabled = false
 _G.MagnetFOV = 100
-_G.MagnetMaxDistance = 500 -- Agora começa em 500
+_G.MagnetMaxDistance = 500
 
 -- Visuals (ESP)
 _G.ESP_Box = false        
@@ -60,9 +60,9 @@ local CachedPredPos = nil
 local ActiveSlider = nil 
 
 -- =============================================
---                 RAGE UI SYSTEM 
+--                 LOW HIGH UI SYSTEM 
 -- =============================================
-local guiName = "EliteHub_RageUI_Final"
+local guiName = "LowHigh_Admin_UI"
 pcall(function()
     if CoreGui:FindFirstChild(guiName) then CoreGui[guiName]:Destroy() end
     if LocalPlayer:FindFirstChild("PlayerGui") and LocalPlayer.PlayerGui:FindFirstChild(guiName) then
@@ -83,56 +83,86 @@ end)
 if not success or not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local Theme = {
-    Bg = Color3.fromRGB(12, 12, 12),           
-    TopBar = Color3.fromRGB(8, 8, 8),          
+    Bg = Color3.fromRGB(15, 15, 15),           
+    Sidebar = Color3.fromRGB(10, 10, 10),          
     Accent = Color3.fromRGB(255, 0, 0), 
     Text = Color3.fromRGB(220, 220, 220),      
     DarkText = Color3.fromRGB(150, 150, 150),  
-    ToggleOff = Color3.fromRGB(20, 20, 20)     
+    ToggleOff = Color3.fromRGB(25, 25, 25)     
 }
 
+-- Botão de Abrir/Fechar (Mobile)
 local OpenButton = Instance.new("TextButton")
 OpenButton.Size = UDim2.new(0, 45, 0, 45); OpenButton.Position = UDim2.new(0.05, 0, 0.05, 0); OpenButton.BackgroundColor3 = Theme.Bg; OpenButton.Text = "LH"; OpenButton.TextColor3 = Theme.Accent; OpenButton.Font = Enum.Font.GothamBold; OpenButton.Visible = false; OpenButton.Active = true; OpenButton.Draggable = true; OpenButton.Parent = ScreenGui; Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(0, 8); local OpenStroke = Instance.new("UIStroke", OpenButton); OpenStroke.Color = Theme.Accent; OpenStroke.Thickness = 2
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 350); MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175); MainFrame.BackgroundColor3 = Theme.Bg; MainFrame.BorderSizePixel = 0; MainFrame.Active = true; MainFrame.Draggable = true; MainFrame.Parent = ScreenGui; Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 6)
+MainFrame.Size = UDim2.new(0, 550, 0, 350); MainFrame.Position = UDim2.new(0.5, -275, 0.5, -175); MainFrame.BackgroundColor3 = Theme.Bg; MainFrame.BorderSizePixel = 0; MainFrame.Active = true; MainFrame.Draggable = true; MainFrame.Parent = ScreenGui; Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
-local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 0, 40); TopBar.BackgroundColor3 = Theme.TopBar; TopBar.Parent = MainFrame; Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 6)
-local TopFix = Instance.new("Frame"); TopFix.Size = UDim2.new(1, 0, 0, 6); TopFix.Position = UDim2.new(0, 0, 1, -6); TopFix.BackgroundColor3 = Theme.TopBar; TopFix.BorderSizePixel = 0; TopFix.Parent = TopBar
-
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 40, 1, 0); CloseButton.Position = UDim2.new(1, -40, 0, 0); CloseButton.BackgroundTransparency = 1; CloseButton.Text = "X"; CloseButton.TextColor3 = Theme.DarkText; CloseButton.Font = Enum.Font.GothamBold; CloseButton.TextSize = 14; CloseButton.Parent = TopBar
+-- Botão Invisível para Fechar
+local CloseButton = Instance.new("TextButton", MainFrame)
+CloseButton.Size = UDim2.new(0, 30, 0, 30); CloseButton.Position = UDim2.new(1, -30, 0, 0); CloseButton.BackgroundTransparency = 1; CloseButton.Text = "X"; CloseButton.TextColor3 = Theme.DarkText; CloseButton.Font = Enum.Font.GothamBold; CloseButton.TextSize = 14; CloseButton.ZIndex = 10
 CloseButton.MouseButton1Click:Connect(function() MainFrame.Visible = false; OpenButton.Visible = true end)
 OpenButton.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenButton.Visible = false end)
 
-local TabsContainer = Instance.new("Frame")
-TabsContainer.Size = UDim2.new(0, 200, 1, 0); TabsContainer.Position = UDim2.new(0.5, -100, 0, 0); TabsContainer.BackgroundTransparency = 1; TabsContainer.Parent = TopBar
-local TabsLayout = Instance.new("UIListLayout"); TabsLayout.Parent = TabsContainer; TabsLayout.FillDirection = Enum.FillDirection.Horizontal; TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabsLayout.VerticalAlignment = Enum.VerticalAlignment.Center; TabsLayout.Padding = UDim.new(0, 15)
+-- Sidebar
+local Sidebar = Instance.new("Frame", MainFrame)
+Sidebar.Size = UDim2.new(0, 60, 1, 0); Sidebar.BackgroundColor3 = Theme.Sidebar; Sidebar.BorderSizePixel = 0
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
+local SidebarFix = Instance.new("Frame", Sidebar)
+SidebarFix.Size = UDim2.new(0, 8, 1, 0); SidebarFix.Position = UDim2.new(1, -8, 0, 0); SidebarFix.BackgroundColor3 = Theme.Sidebar; SidebarFix.BorderSizePixel = 0
 
-local PageContainer = Instance.new("Frame")
-PageContainer.Size = UDim2.new(1, -20, 1, -50); PageContainer.Position = UDim2.new(0, 10, 0, 45); PageContainer.BackgroundTransparency = 1; PageContainer.Parent = MainFrame
+local TabsContainer = Instance.new("Frame", Sidebar)
+TabsContainer.Size = UDim2.new(1, 0, 1, -20); TabsContainer.Position = UDim2.new(0, 0, 0, 20); TabsContainer.BackgroundTransparency = 1
+local TabsLayout = Instance.new("UIListLayout", TabsContainer); TabsLayout.FillDirection = Enum.FillDirection.Vertical; TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabsLayout.Padding = UDim.new(0, 15)
+
+-- Header Textos
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, -70, 0, 60); Header.Position = UDim2.new(0, 70, 0, 0); Header.BackgroundTransparency = 1
+
+local Title = Instance.new("TextLabel", Header)
+Title.Position = UDim2.new(0, 5, 0, 12); Title.Size = UDim2.new(0, 200, 0, 20)
+Title.Text = "Low High Admin"; Title.TextColor3 = Theme.Accent
+Title.Font = Enum.Font.GothamBold; Title.TextSize = 16; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.BackgroundTransparency = 1
+
+local SubTitle = Instance.new("TextLabel", Header)
+SubTitle.Position = UDim2.new(0, 5, 0, 32); SubTitle.Size = UDim2.new(0, 200, 0, 15)
+SubTitle.Text = "improve your aim in game"; SubTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubTitle.Font = Enum.Font.Gotham; SubTitle.TextSize = 11; SubTitle.TextXAlignment = Enum.TextXAlignment.Left; SubTitle.BackgroundTransparency = 1
+
+local UserLabel = Instance.new("TextLabel", Header)
+UserLabel.Position = UDim2.new(1, -165, 0, 12); UserLabel.Size = UDim2.new(0, 150, 0, 20)
+UserLabel.Text = LocalPlayer.DisplayName; UserLabel.TextColor3 = Theme.Accent
+UserLabel.Font = Enum.Font.GothamBold; UserLabel.TextSize = 14; UserLabel.TextXAlignment = Enum.TextXAlignment.Right; UserLabel.BackgroundTransparency = 1
+
+local StatusLabel = Instance.new("TextLabel", Header)
+StatusLabel.Position = UDim2.new(1, -165, 0, 32); StatusLabel.Size = UDim2.new(0, 150, 0, 15)
+StatusLabel.Text = "Vitalício"; StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+StatusLabel.Font = Enum.Font.Gotham; StatusLabel.TextSize = 11; StatusLabel.TextXAlignment = Enum.TextXAlignment.Right; StatusLabel.BackgroundTransparency = 1
+
+-- Page Container
+local PageContainer = Instance.new("Frame", MainFrame)
+PageContainer.Size = UDim2.new(1, -80, 1, -70); PageContainer.Position = UDim2.new(0, 70, 0, 60); PageContainer.BackgroundTransparency = 1
 
 local Pages = {}; local TabButtons = {}
 
 local function CreateTab(Name)
-    local TabBtn = Instance.new("TextButton")
-    TabBtn.Size = UDim2.new(0, 40, 0, 25); TabBtn.BackgroundTransparency = 1; TabBtn.Text = Name; TabBtn.TextColor3 = Theme.DarkText; TabBtn.Font = Enum.Font.GothamBold; TabBtn.TextSize = 12; TabBtn.Parent = TabsContainer
-    local TabIndicator = Instance.new("Frame"); TabIndicator.Size = UDim2.new(1, 10, 1, 4); TabIndicator.Position = UDim2.new(0.5, 0, 0.5, 0); TabIndicator.AnchorPoint = Vector2.new(0.5, 0.5); TabIndicator.BackgroundColor3 = Theme.Accent; TabIndicator.ZIndex = 0; TabIndicator.Visible = false; TabIndicator.Parent = TabBtn; Instance.new("UICorner", TabIndicator).CornerRadius = UDim.new(0, 6)
+    local TabBtn = Instance.new("TextButton", TabsContainer)
+    TabBtn.Size = UDim2.new(1, 0, 0, 35); TabBtn.BackgroundTransparency = 1; TabBtn.Text = Name; TabBtn.TextColor3 = Theme.DarkText; TabBtn.Font = Enum.Font.GothamBold; TabBtn.TextSize = 11
+    local TabIndicator = Instance.new("Frame", TabBtn); TabIndicator.Size = UDim2.new(0, 3, 0.6, 0); TabIndicator.Position = UDim2.new(0, 0, 0.2, 0); TabIndicator.BackgroundColor3 = Theme.Accent; TabIndicator.BorderSizePixel = 0; TabIndicator.Visible = false
 
-    local Page = Instance.new("Frame")
-    Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.Visible = false; Page.Parent = PageContainer
+    local Page = Instance.new("Frame", PageContainer)
+    Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.Visible = false
     
-    local LeftCol = Instance.new("ScrollingFrame")
-    LeftCol.Size = UDim2.new(0.48, 0, 1, 0); LeftCol.BackgroundTransparency = 1; LeftCol.ScrollBarThickness = 0; LeftCol.Parent = Page
-    local LeftLayout = Instance.new("UIListLayout"); LeftLayout.Parent = LeftCol; LeftLayout.Padding = UDim.new(0, 8)
+    local LeftCol = Instance.new("ScrollingFrame", Page)
+    LeftCol.Size = UDim2.new(0.48, 0, 1, 0); LeftCol.BackgroundTransparency = 1; LeftCol.ScrollBarThickness = 0
+    local LeftLayout = Instance.new("UIListLayout", LeftCol); LeftLayout.Padding = UDim.new(0, 8)
     
-    local RightCol = Instance.new("ScrollingFrame")
-    RightCol.Size = UDim2.new(0.48, 0, 1, 0); RightCol.Position = UDim2.new(0.52, 0, 0, 0); RightCol.BackgroundTransparency = 1; RightCol.ScrollBarThickness = 0; RightCol.Parent = Page
-    local RightLayout = Instance.new("UIListLayout"); RightLayout.Parent = RightCol; RightLayout.Padding = UDim.new(0, 8)
+    local RightCol = Instance.new("ScrollingFrame", Page)
+    RightCol.Size = UDim2.new(0.48, 0, 1, 0); RightCol.Position = UDim2.new(0.52, 0, 0, 0); RightCol.BackgroundTransparency = 1; RightCol.ScrollBarThickness = 0
+    local RightLayout = Instance.new("UIListLayout", RightCol); RightLayout.Padding = UDim.new(0, 8)
 
-    LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() LeftCol.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 30) end)
-    RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() RightCol.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 30) end)
+    LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() LeftCol.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 100) end)
+    RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() RightCol.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 100) end)
 
     TabBtn.MouseButton1Click:Connect(function()
         for _, p in pairs(Pages) do p.Visible = false end
@@ -144,67 +174,68 @@ local function CreateTab(Name)
     return LeftCol, RightCol
 end
 
+-- =============================================
+-- ELEMENTOS COM MARGEM DE SEGURANÇA (CORRIGIDOS)
+-- =============================================
 local function CreateSectionLabel(Parent, Text)
-    local Lbl = Instance.new("TextLabel")
-    Lbl.Size = UDim2.new(1, 0, 0, 25); Lbl.BackgroundTransparency = 1; Lbl.Text = Text; Lbl.TextColor3 = Color3.new(1,1,1); Lbl.Font = Enum.Font.GothamBold; Lbl.TextSize = 13; Lbl.TextXAlignment = Enum.TextXAlignment.Left; Lbl.Parent = Parent
+    local Lbl = Instance.new("TextLabel", Parent)
+    Lbl.Size = UDim2.new(1, -15, 0, 25); Lbl.BackgroundTransparency = 1; Lbl.Text = Text; Lbl.TextColor3 = Theme.Accent; Lbl.Font = Enum.Font.GothamBold; Lbl.TextSize = 12; Lbl.TextXAlignment = Enum.TextXAlignment.Left
 end
 
 local function CreateToggle(Parent, Name, Default, Callback)
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, 0, 0, 22); Frame.BackgroundTransparency = 1; Frame.Parent = Parent
+    local Frame = Instance.new("Frame", Parent)
+    Frame.Size = UDim2.new(1, -15, 0, 22); Frame.BackgroundTransparency = 1 -- Recuo de 15px
 
-    local Label = Instance.new("TextLabel")
-    Label.Text = Name; Label.Size = UDim2.new(1, -35, 1, 0); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = Frame
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Text = Name; Label.Size = UDim2.new(1, -35, 1, 0); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 11; Label.TextXAlignment = Enum.TextXAlignment.Left
 
-    local Checkbox = Instance.new("TextButton")
-    Checkbox.Size = UDim2.new(0, 16, 0, 16); Checkbox.Position = UDim2.new(1, -25, 0.5, -8); Checkbox.BackgroundColor3 = Default and Theme.Accent or Theme.ToggleOff; Checkbox.Text = ""; Checkbox.Parent = Frame; Instance.new("UICorner", Checkbox).CornerRadius = UDim.new(0, 4)
+    local Checkbox = Instance.new("TextButton", Frame)
+    Checkbox.Size = UDim2.new(0, 16, 0, 16); Checkbox.Position = UDim2.new(1, -20, 0.5, -8); Checkbox.BackgroundColor3 = Default and Theme.Accent or Theme.ToggleOff; Checkbox.Text = ""; Instance.new("UICorner", Checkbox).CornerRadius = UDim.new(0, 4)
+    local CheckStroke = Instance.new("UIStroke", Checkbox); CheckStroke.Color = Theme.Accent; CheckStroke.Thickness = 1; CheckStroke.Transparency = 0.5
     
-    local CheckIcon = Instance.new("TextLabel")
-    CheckIcon.Size = UDim2.new(1, 0, 1, 0); CheckIcon.BackgroundTransparency = 1; CheckIcon.Text = "✓"; CheckIcon.TextColor3 = Color3.new(1,1,1); CheckIcon.Font = Enum.Font.GothamBold; CheckIcon.TextSize = 12; CheckIcon.Visible = Default; CheckIcon.Parent = Checkbox
+    local CheckIcon = Instance.new("TextLabel", Checkbox)
+    CheckIcon.Size = UDim2.new(1, 0, 1, 0); CheckIcon.BackgroundTransparency = 1; CheckIcon.Text = "✓"; CheckIcon.TextColor3 = Color3.new(1,1,1); CheckIcon.Font = Enum.Font.GothamBold; CheckIcon.TextSize = 12; CheckIcon.Visible = Default
 
     local State = Default
-    local function Fire()
+    Checkbox.MouseButton1Click:Connect(function()
         State = not State
         Checkbox.BackgroundColor3 = State and Theme.Accent or Theme.ToggleOff
         CheckIcon.Visible = State
         Callback(State)
-    end
-    Checkbox.MouseButton1Click:Connect(Fire)
+    end)
 end
 
 local function CreateDropdown(Parent, Name, Options, DefaultIndex, Callback)
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, 0, 0, 42) 
-    Frame.BackgroundTransparency = 1
-    Frame.ClipsDescendants = true
-    Frame.Parent = Parent
+    local Frame = Instance.new("Frame", Parent)
+    Frame.Size = UDim2.new(1, -15, 0, 40); Frame.BackgroundTransparency = 1; Frame.ClipsDescendants = true -- Recuo de 15px
 
-    local Label = Instance.new("TextLabel")
-    Label.Text = Name; Label.Size = UDim2.new(1, 0, 0, 18); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = Frame
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Text = Name; Label.Size = UDim2.new(1, 0, 0, 16); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 11; Label.TextXAlignment = Enum.TextXAlignment.Left
 
-    local MainBtn = Instance.new("TextButton")
-    MainBtn.Size = UDim2.new(1, -15, 0, 22); MainBtn.Position = UDim2.new(0, 0, 0, 18); MainBtn.BackgroundColor3 = Theme.ToggleOff; MainBtn.Text = "  " .. Options[DefaultIndex]; MainBtn.TextColor3 = Theme.DarkText; MainBtn.Font = Enum.Font.Gotham; MainBtn.TextSize = 12; MainBtn.TextXAlignment = Enum.TextXAlignment.Left; MainBtn.Parent = Frame; Instance.new("UICorner", MainBtn).CornerRadius = UDim.new(0, 4)
+    local MainBtn = Instance.new("TextButton", Frame)
+    MainBtn.Size = UDim2.new(1, 0, 0, 20); MainBtn.Position = UDim2.new(0, 0, 0, 18); MainBtn.BackgroundColor3 = Theme.ToggleOff; MainBtn.Text = "  " .. Options[DefaultIndex]; MainBtn.TextColor3 = Theme.Text; MainBtn.Font = Enum.Font.Gotham; MainBtn.TextSize = 10; MainBtn.TextXAlignment = Enum.TextXAlignment.Left; Instance.new("UICorner", MainBtn).CornerRadius = UDim.new(0, 4)
+    local DropStroke = Instance.new("UIStroke", MainBtn); DropStroke.Color = Theme.Accent; DropStroke.Thickness = 1; DropStroke.Transparency = 0.7
 
-    local Arrow = Instance.new("TextLabel")
-    Arrow.Size = UDim2.new(0, 20, 1, 0); Arrow.Position = UDim2.new(1, -25, 0, 0); Arrow.BackgroundTransparency = 1; Arrow.Text = "▼"; Arrow.TextColor3 = Theme.DarkText; Arrow.Font = Enum.Font.GothamBold; Arrow.TextSize = 10; Arrow.Parent = MainBtn
+    local Arrow = Instance.new("TextLabel", MainBtn)
+    Arrow.Size = UDim2.new(0, 20, 1, 0); Arrow.Position = UDim2.new(1, -25, 0, 0); Arrow.BackgroundTransparency = 1; Arrow.Text = "▼"; Arrow.TextColor3 = Theme.DarkText; Arrow.Font = Enum.Font.GothamBold; Arrow.TextSize = 9
 
-    local DropContainer = Instance.new("Frame")
-    DropContainer.Size = UDim2.new(1, -15, 0, #Options * 22); DropContainer.Position = UDim2.new(0, 0, 0, 42); DropContainer.BackgroundColor3 = Color3.fromRGB(15, 15, 15); DropContainer.Parent = Frame; Instance.new("UICorner", DropContainer).CornerRadius = UDim.new(0, 4)
-    local DropLayout = Instance.new("UIListLayout"); DropLayout.Parent = DropContainer
+    local DropContainer = Instance.new("Frame", Frame)
+    DropContainer.Size = UDim2.new(1, 0, 0, #Options * 20); DropContainer.Position = UDim2.new(0, 0, 0, 40); DropContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 20); Instance.new("UICorner", DropContainer).CornerRadius = UDim.new(0, 4)
+    local DropLayout = Instance.new("UIListLayout", DropContainer)
 
     local IsOpen = false
     MainBtn.MouseButton1Click:Connect(function()
         IsOpen = not IsOpen
         Arrow.Text = IsOpen and "▲" or "▼"
-        Frame.Size = IsOpen and UDim2.new(1, 0, 0, 42 + (#Options * 22) + 2) or UDim2.new(1, 0, 0, 42)
+        Frame.Size = IsOpen and UDim2.new(1, -15, 0, 40 + (#Options * 20) + 2) or UDim2.new(1, -15, 0, 40)
     end)
 
     for i, opt in pairs(Options) do
-        local OptBtn = Instance.new("TextButton")
-        OptBtn.Size = UDim2.new(1, 0, 0, 22); OptBtn.BackgroundTransparency = 1; OptBtn.Text = "  " .. opt; OptBtn.TextColor3 = (i == DefaultIndex) and Theme.Accent or Theme.Text; OptBtn.Font = Enum.Font.Gotham; OptBtn.TextSize = 11; OptBtn.TextXAlignment = Enum.TextXAlignment.Left; OptBtn.Parent = DropContainer
+        local OptBtn = Instance.new("TextButton", DropContainer)
+        OptBtn.Size = UDim2.new(1, 0, 0, 20); OptBtn.BackgroundTransparency = 1; OptBtn.Text = "  " .. opt; OptBtn.TextColor3 = (i == DefaultIndex) and Theme.Accent or Theme.Text; OptBtn.Font = Enum.Font.Gotham; OptBtn.TextSize = 10; OptBtn.TextXAlignment = Enum.TextXAlignment.Left
 
         OptBtn.MouseButton1Click:Connect(function()
-            IsOpen = false; Arrow.Text = "▼"; Frame.Size = UDim2.new(1, 0, 0, 42)
+            IsOpen = false; Arrow.Text = "▼"; Frame.Size = UDim2.new(1, -15, 0, 40)
             MainBtn.Text = "  " .. opt
             for _, btn in pairs(DropContainer:GetChildren()) do if btn:IsA("TextButton") then btn.TextColor3 = Theme.Text end end
             OptBtn.TextColor3 = Theme.Accent
@@ -215,23 +246,23 @@ end
 
 local function CreateSlider(Parent, Name, Min, Max, Default, Callback, Suffix)
     Suffix = Suffix or "" 
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, 0, 0, 35); Frame.BackgroundTransparency = 1; Frame.Parent = Parent
+    local Frame = Instance.new("Frame", Parent)
+    Frame.Size = UDim2.new(1, -15, 0, 35); Frame.BackgroundTransparency = 1 -- Recuo de 15px
 
-    local Label = Instance.new("TextLabel")
-    Label.Text = Name; Label.Size = UDim2.new(0.7, 0, 0, 15); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = Frame
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Text = Name; Label.Size = UDim2.new(0.7, 0, 0, 15); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 11; Label.TextXAlignment = Enum.TextXAlignment.Left
 
-    local ValInput = Instance.new("TextBox")
-    ValInput.Text = tostring(Default) .. Suffix; ValInput.Size = UDim2.new(0.3, 0, 0, 15); ValInput.Position = UDim2.new(0.7, -15, 0, 0); ValInput.BackgroundTransparency = 1; ValInput.Font = Enum.Font.Gotham; ValInput.TextColor3 = Theme.DarkText; ValInput.TextSize = 12; ValInput.TextXAlignment = Enum.TextXAlignment.Right; ValInput.ClearTextOnFocus = false; ValInput.Parent = Frame
+    local ValInput = Instance.new("TextBox", Frame)
+    ValInput.Text = tostring(Default) .. Suffix; ValInput.Size = UDim2.new(0.3, 0, 0, 15); ValInput.Position = UDim2.new(0.7, -5, 0, 0); ValInput.BackgroundTransparency = 1; ValInput.Font = Enum.Font.Gotham; ValInput.TextColor3 = Theme.DarkText; ValInput.TextSize = 11; ValInput.TextXAlignment = Enum.TextXAlignment.Right; ValInput.ClearTextOnFocus = false
 
-    local SliderBg = Instance.new("Frame")
-    SliderBg.Size = UDim2.new(1, -15, 0, 6); SliderBg.Position = UDim2.new(0, 0, 0, 22); SliderBg.BackgroundColor3 = Theme.ToggleOff; SliderBg.BorderSizePixel = 0; SliderBg.Parent = Frame; Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
+    local SliderBg = Instance.new("Frame", Frame)
+    SliderBg.Size = UDim2.new(1, 0, 0, 4); SliderBg.Position = UDim2.new(0, 0, 0, 22); SliderBg.BackgroundColor3 = Theme.ToggleOff; SliderBg.BorderSizePixel = 0; Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
 
-    local Fill = Instance.new("Frame")
-    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0); Fill.BackgroundColor3 = Theme.Accent; Fill.BorderSizePixel = 0; Fill.Parent = SliderBg; Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+    local Fill = Instance.new("Frame", SliderBg)
+    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0); Fill.BackgroundColor3 = Theme.Accent; Fill.BorderSizePixel = 0; Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
 
-    local Trigger = Instance.new("TextButton")
-    Trigger.Size = UDim2.new(1, 0, 1, 0); Trigger.BackgroundTransparency = 1; Trigger.Text = ""; Trigger.Parent = SliderBg
+    local Trigger = Instance.new("TextButton", SliderBg)
+    Trigger.Size = UDim2.new(1, 0, 1, 10); Trigger.Position = UDim2.new(0,0,0,-3); Trigger.BackgroundTransparency = 1; Trigger.Text = ""
 
     Trigger.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -271,7 +302,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- === TABS DA RAGE UI ===
+-- === TABS DA UI ===
 local L1, R1 = CreateTab("AIM")
 local L2, R2 = CreateTab("ESP")
 local L3, R3 = CreateTab("MISC")
@@ -321,7 +352,6 @@ CreateToggle(R3, "Enable Magnet Kill", false, function(v) _G.MagnetKill = v end)
 CreateToggle(R3, "Magnet Team Check", false, function(v) _G.MagnetTeamCheck = v end)
 CreateToggle(R3, "Enable Magnet FOV", false, function(v) _G.MagnetFOVEnabled = v end)
 CreateSlider(R3, "Magnet FOV Radius", 0, 500, 100, function(v) _G.MagnetFOV = v end)
--- AUMENTADO PARA 3000 O LIMITE DO MAGNET
 CreateSlider(R3, "Magnet Max Dist", 1, 3000, 500, function(v) _G.MagnetMaxDistance = v end)
 
 TabButtons[1].TextColor3 = Color3.new(1,1,1); TabButtons[1]:FindFirstChildWhichIsA("Frame").Visible = true; Pages[1].Visible = true
@@ -430,7 +460,7 @@ end)
 RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1, function()
     -- FOV
     FOVCircle.Visible = _G.ShowFOV; FOVCircle.Radius = _G.FOV; FOVCircle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2); FOVCircle.Color = Color3.new(1,1,1); FOVCircle.Thickness = 1; FOVCircle.Filled = false; FOVCircle.NumSides = 64
-    MagnetFOV.Visible = _G.MagnetFOVEnabled; MagnetFOV.Radius = _G.MagnetFOV; MagnetFOV.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2); MagnetFOV.Color = Color3.fromRGB(255,0,0); MagnetFOV.Thickness = 1; MagnetFOV.Filled = false; MagnetFOV.NumSides = 64
+    MagnetFOV.Visible = _G.MagnetFOVEnabled; MagnetFOV.Radius = _G.MagnetFOV; MagnetFOV.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2); MagnetFOV.Color = Theme.Accent; MagnetFOV.Thickness = 1; MagnetFOV.Filled = false; MagnetFOV.NumSides = 64
 
     -- ESP
     for player, drawings in pairs(ESP_Table) do
@@ -465,56 +495,17 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
                 else drawings.hpOutline.Visible = false; drawings.hpBar.Visible = false end
                 if _G.ESP_Tracers then if _G.ESP_LineType == "Top" then drawings.tracer.From = Vector2.new(Camera.ViewportSize.X/2, 0); drawings.tracer.To = Vector2.new(TopPos.X, TopPos.Y) else drawings.tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y); drawings.tracer.To = Vector2.new(TopPos.X, BotPos.Y) end; drawings.tracer.Thickness = _G.ESP_Thickness; drawings.tracer.Visible = true else drawings.tracer.Visible = false end
                 
-                -- ==============================================
-                -- SKELETON LOGIC (ESQUELETO STICKMAN DO SCRIPT 1)
-                -- ==============================================
+                -- Skeleton
                 if _G.ESP_Skeleton then
-                    local H = char:FindFirstChild("Head")
-                    local T = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-                    local LA = char:FindFirstChild("Left Arm") or char:FindFirstChild("LeftUpperArm")
-                    local RA = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightUpperArm")
-                    local LL = char:FindFirstChild("Left Leg") or char:FindFirstChild("LeftUpperLeg")
-                    local RL = char:FindFirstChild("Right Leg") or char:FindFirstChild("RightUpperLeg")
-                    
+                    local H = char:FindFirstChild("Head"); local T = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso"); local LA = char:FindFirstChild("Left Arm") or char:FindFirstChild("LeftUpperArm"); local RA = char:FindFirstChild("Right Arm") or char:FindFirstChild("RightUpperArm"); local LL = char:FindFirstChild("Left Leg") or char:FindFirstChild("LeftUpperLeg"); local RL = char:FindFirstChild("Right Leg") or char:FindFirstChild("RightUpperLeg")
                     if H and T and LA and RA and LL and RL then
-                        local pts = {
-                            H.Position, 
-                            (T.CFrame * CFrame.new(0,1,0)).Position, 
-                            (T.CFrame * CFrame.new(0,-1,0)).Position, 
-                            (T.CFrame * CFrame.new(-1,0.5,0)).Position, 
-                            (LA.CFrame * CFrame.new(0,-1,0)).Position, 
-                            (T.CFrame * CFrame.new(1,0.5,0)).Position, 
-                            (RA.CFrame * CFrame.new(0,-1,0)).Position, 
-                            (T.CFrame * CFrame.new(-0.5,-1,0)).Position, 
-                            (LL.CFrame * CFrame.new(0,-1,0)).Position, 
-                            (T.CFrame * CFrame.new(0.5,-1,0)).Position, 
-                            (RL.CFrame * CFrame.new(0,-1,0)).Position
-                        }
-                        local sp = {}
-                        for i=1, 11 do 
-                            local p, v = Camera:WorldToViewportPoint(pts[i])
-                            sp[i] = {Vector2.new(p.X, p.Y), v and p.Z > 0} 
-                        end
+                        local pts = {H.Position, (T.CFrame * CFrame.new(0,1,0)).Position, (T.CFrame * CFrame.new(0,-1,0)).Position, (T.CFrame * CFrame.new(-1,0.5,0)).Position, (LA.CFrame * CFrame.new(0,-1,0)).Position, (T.CFrame * CFrame.new(1,0.5,0)).Position, (RA.CFrame * CFrame.new(0,-1,0)).Position, (T.CFrame * CFrame.new(-0.5,-1,0)).Position, (LL.CFrame * CFrame.new(0,-1,0)).Position, (T.CFrame * CFrame.new(0.5,-1,0)).Position, (RL.CFrame * CFrame.new(0,-1,0)).Position}
+                        local sp = {}; for i=1, 11 do local p, v = Camera:WorldToViewportPoint(pts[i]); sp[i] = {Vector2.new(p.X, p.Y), v and p.Z > 0} end
                         local conns = {{1,2},{2,3},{2,4},{4,5},{2,6},{6,7},{3,8},{8,9},{3,10},{10,11}}
-                        
-                        for i=1,10 do 
-                            local l = drawings.skeleton[i]
-                            local c = conns[i]
-                            if sp[c[1]][2] and sp[c[2]][2] then 
-                                l.From = sp[c[1]][1]; l.To = sp[c[2]][1]; l.Visible = true 
-                            else 
-                                l.Visible = false 
-                            end 
-                        end
-                        for i=11, 15 do 
-                            if drawings.skeleton[i] then drawings.skeleton[i].Visible = false end 
-                        end
-                    else
-                        for _, l in pairs(drawings.skeleton) do l.Visible = false end
-                    end
-                else
-                    for _, l in pairs(drawings.skeleton) do l.Visible = false end
-                end
+                        for i=1,10 do local l = drawings.skeleton[i]; local c = conns[i]; if sp[c[1]][2] and sp[c[2]][2] then l.From = sp[c[1]][1]; l.To = sp[c[2]][1]; l.Visible = true else l.Visible = false end end
+                        for i=11, 15 do if drawings.skeleton[i] then drawings.skeleton[i].Visible = false end end
+                    else for _, l in pairs(drawings.skeleton) do l.Visible = false end end
+                else for _, l in pairs(drawings.skeleton) do l.Visible = false end end
 
             else 
                 for _, l in pairs(drawings.corners) do l.Visible = false end; for _, l in pairs(drawings.skeleton) do l.Visible = false end; drawings.boxNormal.Visible = false; drawings.name.Visible = false; drawings.distance.Visible = false; drawings.hpOutline.Visible = false; drawings.hpBar.Visible = false; drawings.tracer.Visible = false; drawings.boxFill.Visible = false 
@@ -537,7 +528,6 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
 
                     if (not _G.MagnetTeamCheck or not IsTeammate) and v.Character.Humanoid.Health > 0 and not v.Character.Humanoid.Sit then
                         if dist <= _G.MagnetMaxDistance and (not _G.MagnetFOVEnabled or fovDist <= _G.MagnetFOV) then
-                            -- Desliga as colisões para ele atravessar paredes sem agarrar
                             for _, part in pairs(v.Character:GetChildren()) do
                                 if part:IsA("BasePart") then part.CanCollide = false end
                             end
@@ -569,9 +559,7 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
         end
     end
 
-    -- =============================================
     -- LÓGICA DE ATUALIZAÇÃO DO AIMBOT
-    -- =============================================
     if _G.AimbotEnabled or _G.SilentAimEnabled then
         CachedTarget = GetClosestPlayer()
         if CachedTarget and CachedTarget.Character then
@@ -594,21 +582,36 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
     end
 end)
 
-UserInputService.InputBegan:Connect(function(input) if input.KeyCode == Enum.KeyCode.Insert then ToggleGUI() end end)
-
 -- =============================================
--- MOUSE SILENT AIM (HOOK SEGURO - NÃO TRAVA A ARMA)
+-- HOOKS
 -- =============================================
-local OldIndex = nil
-OldIndex = hookmetamethod(game, "__index", newcclosure(function(self, Index)
-    if _G.SilentAimEnabled and self == Mouse and CachedTarget and CachedPredPos then
-        if Index == "Hit" then 
-            return CFrame.new(CachedPredPos)
-        elseif Index == "Target" then 
-            local targetPart = CachedTarget.Character and (CachedTarget.Character:FindFirstChild("UpperTorso") or CachedTarget.Character:FindFirstChild("Torso") or CachedTarget.Character:FindFirstChild("HumanoidRootPart"))
-            return targetPart
+local OldNamecall
+OldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local Method = getnamecallmethod()
+    local Args = {...}
+    
+    if _G.SilentAimEnabled and CachedTarget and CachedPredPos then
+        if Method == "FireServer" or Method == "InvokeServer" then
+            for i, arg in pairs(Args) do
+                if typeof(arg) == "Vector3" then Args[i] = CachedPredPos
+                elseif typeof(arg) == "CFrame" then Args[i] = CFrame.new(Camera.CFrame.Position, CachedPredPos)
+                elseif typeof(arg) == "Instance" and arg:IsA("BasePart") then Args[i] = GetAimbotPart(CachedTarget.Character) end
+            end
+            return OldNamecall(self, unpack(Args))
+        end
+        if Method == "Raycast" and self == workspace then
+            Args[2] = (CachedPredPos - Args[1]).Unit * Args[2].Magnitude
+            return OldNamecall(self, unpack(Args))
         end
     end
-    
+    return OldNamecall(self, ...)
+end)
+
+local OldIndex
+OldIndex = hookmetamethod(game, "__index", function(self, Index)
+    if self == Mouse and _G.SilentAimEnabled and CachedTarget and CachedPredPos then
+        if Index == "Hit" then return CFrame.new(CachedPredPos)
+        elseif Index == "Target" then return GetAimbotPart(CachedTarget.Character) end
+    end
     return OldIndex(self, Index)
-end))
+end)
