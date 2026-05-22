@@ -1,5 +1,5 @@
 -- ==============================================================================
---                 LOW HIGH ADMIN - VITALÍCIO (SNIPER DUELS / PRISON)
+--                 LOW HIGH ADMIN - VITALÍCIO (SNIPER DUELS / PRISON / MMV)
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -82,6 +82,7 @@ local success = pcall(function()
 end)
 if not success or not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
+-- Cores
 local Theme = {
     Bg = Color3.fromRGB(15, 15, 15),           
     Sidebar = Color3.fromRGB(10, 10, 10),          
@@ -111,8 +112,17 @@ Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 local SidebarFix = Instance.new("Frame", Sidebar)
 SidebarFix.Size = UDim2.new(0, 8, 1, 0); SidebarFix.Position = UDim2.new(1, -8, 0, 0); SidebarFix.BackgroundColor3 = Theme.Sidebar; SidebarFix.BorderSizePixel = 0
 
+-- LOGO DO LOW HIGH ADMIN
+local MyLogo = Instance.new("ImageLabel", Sidebar)
+MyLogo.Size = UDim2.new(0, 42, 0, 42) 
+MyLogo.Position = UDim2.new(0.5, -21, 0, 12) 
+MyLogo.Image = "rbxthumb://type=Asset&id=125256544092304&w=150&h=150" 
+MyLogo.BackgroundTransparency = 1
+MyLogo.ScaleType = Enum.ScaleType.Fit
+Instance.new("UICorner", MyLogo).CornerRadius = UDim.new(1, 0) 
+
 local TabsContainer = Instance.new("Frame", Sidebar)
-TabsContainer.Size = UDim2.new(1, 0, 1, -20); TabsContainer.Position = UDim2.new(0, 0, 0, 20); TabsContainer.BackgroundTransparency = 1
+TabsContainer.Size = UDim2.new(1, 0, 1, -70); TabsContainer.Position = UDim2.new(0, 0, 0, 70); TabsContainer.BackgroundTransparency = 1
 local TabsLayout = Instance.new("UIListLayout", TabsContainer); TabsLayout.FillDirection = Enum.FillDirection.Vertical; TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabsLayout.Padding = UDim.new(0, 15)
 
 -- Header Textos
@@ -120,12 +130,12 @@ local Header = Instance.new("Frame", MainFrame)
 Header.Size = UDim2.new(1, -70, 0, 60); Header.Position = UDim2.new(0, 70, 0, 0); Header.BackgroundTransparency = 1
 
 local Title = Instance.new("TextLabel", Header)
-Title.Position = UDim2.new(0, 5, 0, 12); Title.Size = UDim2.new(0, 200, 0, 20)
+Title.Position = UDim2.new(0, 10, 0, 12); Title.Size = UDim2.new(0, 200, 0, 20)
 Title.Text = "Low High Admin"; Title.TextColor3 = Theme.Accent
 Title.Font = Enum.Font.GothamBold; Title.TextSize = 16; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.BackgroundTransparency = 1
 
 local SubTitle = Instance.new("TextLabel", Header)
-SubTitle.Position = UDim2.new(0, 5, 0, 32); SubTitle.Size = UDim2.new(0, 200, 0, 15)
+SubTitle.Position = UDim2.new(0, 10, 0, 32); SubTitle.Size = UDim2.new(0, 200, 0, 15)
 SubTitle.Text = "improve your aim in game"; SubTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 SubTitle.Font = Enum.Font.Gotham; SubTitle.TextSize = 11; SubTitle.TextXAlignment = Enum.TextXAlignment.Left; SubTitle.BackgroundTransparency = 1
 
@@ -175,7 +185,7 @@ local function CreateTab(Name)
 end
 
 -- =============================================
--- ELEMENTOS COM MARGEM DE SEGURANÇA (CORRIGIDOS)
+-- ELEMENTOS COM MARGEM DE SEGURANÇA
 -- =============================================
 local function CreateSectionLabel(Parent, Text)
     local Lbl = Instance.new("TextLabel", Parent)
@@ -184,7 +194,7 @@ end
 
 local function CreateToggle(Parent, Name, Default, Callback)
     local Frame = Instance.new("Frame", Parent)
-    Frame.Size = UDim2.new(1, -15, 0, 22); Frame.BackgroundTransparency = 1 -- Recuo de 15px
+    Frame.Size = UDim2.new(1, -15, 0, 22); Frame.BackgroundTransparency = 1
 
     local Label = Instance.new("TextLabel", Frame)
     Label.Text = Name; Label.Size = UDim2.new(1, -35, 1, 0); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 11; Label.TextXAlignment = Enum.TextXAlignment.Left
@@ -207,7 +217,7 @@ end
 
 local function CreateDropdown(Parent, Name, Options, DefaultIndex, Callback)
     local Frame = Instance.new("Frame", Parent)
-    Frame.Size = UDim2.new(1, -15, 0, 40); Frame.BackgroundTransparency = 1; Frame.ClipsDescendants = true -- Recuo de 15px
+    Frame.Size = UDim2.new(1, -15, 0, 40); Frame.BackgroundTransparency = 1; Frame.ClipsDescendants = true 
 
     local Label = Instance.new("TextLabel", Frame)
     Label.Text = Name; Label.Size = UDim2.new(1, 0, 0, 16); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 11; Label.TextXAlignment = Enum.TextXAlignment.Left
@@ -244,10 +254,13 @@ local function CreateDropdown(Parent, Name, Options, DefaultIndex, Callback)
     end
 end
 
+-- =============================================
+-- NOVO ESTILO DE SLIDER (BARRA GROSSA)
+-- =============================================
 local function CreateSlider(Parent, Name, Min, Max, Default, Callback, Suffix)
     Suffix = Suffix or "" 
     local Frame = Instance.new("Frame", Parent)
-    Frame.Size = UDim2.new(1, -15, 0, 35); Frame.BackgroundTransparency = 1 -- Recuo de 15px
+    Frame.Size = UDim2.new(1, -15, 0, 38); Frame.BackgroundTransparency = 1 
 
     local Label = Instance.new("TextLabel", Frame)
     Label.Text = Name; Label.Size = UDim2.new(0.7, 0, 0, 15); Label.BackgroundTransparency = 1; Label.Font = Enum.Font.Gotham; Label.TextColor3 = Theme.Text; Label.TextSize = 11; Label.TextXAlignment = Enum.TextXAlignment.Left
@@ -255,14 +268,23 @@ local function CreateSlider(Parent, Name, Min, Max, Default, Callback, Suffix)
     local ValInput = Instance.new("TextBox", Frame)
     ValInput.Text = tostring(Default) .. Suffix; ValInput.Size = UDim2.new(0.3, 0, 0, 15); ValInput.Position = UDim2.new(0.7, -5, 0, 0); ValInput.BackgroundTransparency = 1; ValInput.Font = Enum.Font.Gotham; ValInput.TextColor3 = Theme.DarkText; ValInput.TextSize = 11; ValInput.TextXAlignment = Enum.TextXAlignment.Right; ValInput.ClearTextOnFocus = false
 
+    -- O TRILHO DO SLIDER (Grossura e cor alteradas)
     local SliderBg = Instance.new("Frame", Frame)
-    SliderBg.Size = UDim2.new(1, 0, 0, 4); SliderBg.Position = UDim2.new(0, 0, 0, 22); SliderBg.BackgroundColor3 = Theme.ToggleOff; SliderBg.BorderSizePixel = 0; Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
+    SliderBg.Size = UDim2.new(1, 0, 0, 10); -- Aumentado de 4 para 10 pixels de altura
+    SliderBg.Position = UDim2.new(0, 0, 0, 22); 
+    SliderBg.BackgroundColor3 = Color3.fromRGB(8, 8, 8); -- Fundo quase preto para contrastar
+    SliderBg.BorderSizePixel = 0; 
+    Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(0, 3) -- Levemente arredondado
 
+    -- A BARRA DE PREENCHIMENTO VERMELHA
     local Fill = Instance.new("Frame", SliderBg)
-    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0); Fill.BackgroundColor3 = Theme.Accent; Fill.BorderSizePixel = 0; Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0); 
+    Fill.BackgroundColor3 = Theme.Accent; -- O seu vermelho padrão
+    Fill.BorderSizePixel = 0; 
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 3)
 
     local Trigger = Instance.new("TextButton", SliderBg)
-    Trigger.Size = UDim2.new(1, 0, 1, 10); Trigger.Position = UDim2.new(0,0,0,-3); Trigger.BackgroundTransparency = 1; Trigger.Text = ""
+    Trigger.Size = UDim2.new(1, 0, 1, 0); Trigger.Position = UDim2.new(0,0,0,0); Trigger.BackgroundTransparency = 1; Trigger.Text = ""
 
     Trigger.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
