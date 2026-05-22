@@ -194,7 +194,9 @@ end
 -- =============================================
 local function CreateSectionLabel(Parent, Text)
     local Lbl = Instance.new("TextLabel", Parent)
-    Lbl.Size = UDim2.new(1, -15, 0, 25); Lbl.BackgroundTransparency = 1; Lbl.Text = Text; Lbl.TextColor3 = Theme.Accent; Lbl.Font = Enum.Font.GothamBold; Lbl.TextSize = 12; Lbl.TextXAlignment = Enum.TextXAlignment.Left
+    Lbl.Size = UDim2.new(1, -15, 0, 25); Lbl.BackgroundTransparency = 1; Lbl.Text = Text; 
+    Lbl.TextColor3 = Color3.fromRGB(255, 255, 255); -- Cor alterada para Branco
+    Lbl.Font = Enum.Font.GothamBold; Lbl.TextSize = 12; Lbl.TextXAlignment = Enum.TextXAlignment.Left
 end
 
 local function CreateToggle(Parent, Name, Default, Callback)
