@@ -87,7 +87,7 @@ local success = pcall(function()
 end)
 if not success or not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Cores originais (Sidebar = 10,10,10 / Fundo = 15,15,15)
+-- Cores
 local Theme = {
     Bg = Color3.fromRGB(15, 15, 15),           
     Sidebar = Color3.fromRGB(10, 10, 10),          
@@ -119,15 +119,15 @@ SidebarFix.Size = UDim2.new(0, 8, 1, 0); SidebarFix.Position = UDim2.new(1, -8, 
 
 -- LOGO DO LOW HIGH ADMIN
 local MyLogo = Instance.new("ImageLabel", Sidebar)
-MyLogo.Size = UDim2.new(0, 42, 0, 42) 
-MyLogo.Position = UDim2.new(0.5, -21, 0, 12) 
+MyLogo.Size = UDim2.new(0, 60, 0, 60) 
+MyLogo.Position = UDim2.new(0.5, -30, 0, 8) 
 MyLogo.Image = "rbxthumb://type=Asset&id=125256544092304&w=150&h=150" 
 MyLogo.BackgroundTransparency = 1
 MyLogo.ScaleType = Enum.ScaleType.Fit
 Instance.new("UICorner", MyLogo).CornerRadius = UDim.new(1, 0) 
 
 local TabsContainer = Instance.new("Frame", Sidebar)
-TabsContainer.Size = UDim2.new(1, 0, 1, -70); TabsContainer.Position = UDim2.new(0, 0, 0, 70); TabsContainer.BackgroundTransparency = 1
+TabsContainer.Size = UDim2.new(1, 0, 1, -75); TabsContainer.Position = UDim2.new(0, 0, 0, 75); TabsContainer.BackgroundTransparency = 1
 local TabsLayout = Instance.new("UIListLayout", TabsContainer); TabsLayout.FillDirection = Enum.FillDirection.Vertical; TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabsLayout.Padding = UDim.new(0, 15)
 
 -- Header Textos
@@ -195,7 +195,7 @@ end
 local function CreateSectionLabel(Parent, Text)
     local Lbl = Instance.new("TextLabel", Parent)
     Lbl.Size = UDim2.new(1, -15, 0, 25); Lbl.BackgroundTransparency = 1; Lbl.Text = Text; 
-    Lbl.TextColor3 = Color3.fromRGB(255, 255, 255); -- Cor alterada para Branco
+    Lbl.TextColor3 = Color3.fromRGB(255, 255, 255); 
     Lbl.Font = Enum.Font.GothamBold; Lbl.TextSize = 12; Lbl.TextXAlignment = Enum.TextXAlignment.Left
 end
 
