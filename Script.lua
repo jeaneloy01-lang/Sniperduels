@@ -342,7 +342,7 @@ CreateSlider(L1, "Max Distance", 1, 3000, 3000, function(v) _G.MaxDistance = v e
 CreateSlider(L1, "Smoothness", 1, 100, 100, function(v) _G.Smoothness = v / 100 end)
 
 -- Dropdowns de Tipo adicionados no Aimbot Settings
-CreateSectionLabel(R1, "Aimbot Settings")
+CreateSectionLabel(R1, "Aim Settings")
 CreateDropdown(R1, "Type Aimbot", {"Aimbot Legit", "Aimbot Rage"}, 1, function(val) _G.AimbotType = val end)
 CreateDropdown(R1, "Type Silent Aim", {"Silent Legit", "Silent Rage"}, 1, function(val) _G.SilentAimType = val end)
 CreateToggle(R1, "Enable Prediction", true, function(v) _G.PredictionEnabled = v end)
@@ -352,7 +352,7 @@ CreateToggle(R1, "Enable FOV", false, function(v) _G.ShowFOV = v end)
 CreateSlider(R1, "FOV Radius", 0, 500, 100, function(v) _G.FOV = v end)
 
 -- Aba Visuals 
-CreateSectionLabel(L2, "ESP Elements")
+CreateSectionLabel(L2, "Esp Elements")
 CreateToggle(L2, "Esp Box", false, function(v) _G.ESP_Box = v end)
 CreateToggle(L2, "Esp Fill Box", false, function(v) _G.ESP_FillBox = v end) 
 CreateToggle(L2, "Esp Skeleton", false, function(v) _G.ESP_Skeleton = v end)
@@ -363,7 +363,7 @@ CreateToggle(L2, "Esp Line", false, function(v) _G.ESP_Tracers = v end)
 CreateToggle(L2, "Esp Team Check", false, function(v) _G.ESP_TeamCheck = v end)
 CreateSlider(L2, "Esp Max Distance", 1, 3000, 3000, function(v) _G.ESP_MaxDistance = v end)
 
-CreateSectionLabel(R2, "ESP Config")
+CreateSectionLabel(R2, "Esp Settings")
 CreateDropdown(R2, "Type Box", {"Box Corner", "Box Normal"}, 1, function(val) _G.ESP_BoxType = val end)
 CreateDropdown(R2, "Type Line", {"Bottom", "Top"}, 1, function(val) _G.ESP_LineType = val end)
 CreateDropdown(R2, "Type Health", {"Top", "Bottom", "Left", "Right"}, 1, function(val) _G.ESP_HealthType = val end)
