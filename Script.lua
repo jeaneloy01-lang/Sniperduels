@@ -1,5 +1,5 @@
 -- ==============================================================================
---                 LOW HIGH ADMIN - VITALÍCIO (SNIPER DUELS / PRISON / MMV)
+--         LOW HIGH ADMIN - VITALÍCIO (ÍCONES MINI + HITBOX MAX + PRELOAD)
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -7,9 +7,22 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local Stats = game:GetService("Stats")
+local ContentProvider = game:GetService("ContentProvider") -- Sistema de carregar sem delay
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
+
+-- =============================================
+--                 PRÉ-CARREGAMENTO (Sem Delay)
+-- =============================================
+local ImageURIs = {
+    "rbxthumb://type=Asset&id=125256544092304&w=150&h=150", -- Logo
+    "rbxthumb://type=Asset&id=128137609286733&w=150&h=150", -- Mouse
+    "rbxthumb://type=Asset&id=90674527474660&w=150&h=150",  -- Olho
+    "rbxthumb://type=Asset&id=70777727722441&w=150&h=150"   -- Engrenagem
+}
+-- Baixa as imagens na memória para aparecerem na hora
+pcall(function() ContentProvider:PreloadAsync(ImageURIs) end)
 
 -- =============================================
 --                 CONFIGURAÇÕES Globais
@@ -126,9 +139,10 @@ MyLogo.BackgroundTransparency = 1
 MyLogo.ScaleType = Enum.ScaleType.Fit
 Instance.new("UICorner", MyLogo).CornerRadius = UDim.new(1, 0) 
 
+-- Container das Abas
 local TabsContainer = Instance.new("Frame", Sidebar)
-TabsContainer.Size = UDim2.new(1, 0, 1, -75); TabsContainer.Position = UDim2.new(0, 0, 0, 75); TabsContainer.BackgroundTransparency = 1
-local TabsLayout = Instance.new("UIListLayout", TabsContainer); TabsLayout.FillDirection = Enum.FillDirection.Vertical; TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabsLayout.Padding = UDim.new(0, 15)
+TabsContainer.Size = UDim2.new(1, 0, 1, -85); TabsContainer.Position = UDim2.new(0, 0, 0, 85); TabsContainer.BackgroundTransparency = 1
+local TabsLayout = Instance.new("UIListLayout", TabsContainer); TabsLayout.FillDirection = Enum.FillDirection.Vertical; TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabsLayout.Padding = UDim.new(0, 20)
 
 -- Header Textos
 local Header = Instance.new("Frame", MainFrame)
@@ -158,12 +172,35 @@ StatusLabel.Font = Enum.Font.Gotham; StatusLabel.TextSize = 11; StatusLabel.Text
 local PageContainer = Instance.new("Frame", MainFrame)
 PageContainer.Size = UDim2.new(1, -80, 1, -70); PageContainer.Position = UDim2.new(0, 70, 0, 60); PageContainer.BackgroundTransparency = 1
 
-local Pages = {}; local TabButtons = {}
+local Pages = {}
+local TabData = {} 
 
-local function CreateTab(Name)
-    local TabBtn = Instance.new("TextButton", TabsContainer)
-    TabBtn.Size = UDim2.new(1, 0, 0, 35); TabBtn.BackgroundTransparency = 1; TabBtn.Text = Name; TabBtn.TextColor3 = Theme.DarkText; TabBtn.Font = Enum.Font.GothamBold; TabBtn.TextSize = 11
-    local TabIndicator = Instance.new("Frame", TabBtn); TabIndicator.Size = UDim2.new(0, 3, 0.6, 0); TabIndicator.Position = UDim2.new(0, 0, 0.2, 0); TabIndicator.BackgroundColor3 = Theme.Accent; TabIndicator.BorderSizePixel = 0; TabIndicator.Visible = false
+-- ESTRUTURA: HITBOX CONTINUA GIGANTE, MAS A IMAGEM AGORA É MENOR AINDA
+local function CreateTab(Name, ImageID, TamanhoX, TamanhoY)
+    local TabWrapper = Instance.new("Frame", TabsContainer)
+    TabWrapper.Size = UDim2.new(1, 0, 0, 42) -- Caixa principal (hitbox) continua grande
+    TabWrapper.BackgroundTransparency = 1
+    
+    local HitboxBtn = Instance.new("TextButton", TabWrapper)
+    HitboxBtn.Size = UDim2.new(1, 0, 1, 0)
+    HitboxBtn.BackgroundTransparency = 1
+    HitboxBtn.Text = ""
+    HitboxBtn.ZIndex = 5
+    
+    local TabIcon = Instance.new("ImageLabel", TabWrapper)
+    TabIcon.Size = UDim2.new(0, TamanhoX, 0, TamanhoY) -- Recebe os novos tamanhos ultra reduzidos
+    TabIcon.Position = UDim2.new(0.5, -TamanhoX/2, 0.5, -TamanhoY/2)
+    TabIcon.BackgroundTransparency = 1
+    TabIcon.Image = "rbxthumb://type=Asset&id=" .. tostring(ImageID) .. "&w=150&h=150"
+    TabIcon.ScaleType = Enum.ScaleType.Stretch
+    TabIcon.ImageColor3 = Theme.DarkText
+    
+    local TabIndicator = Instance.new("Frame", TabWrapper)
+    TabIndicator.Size = UDim2.new(0, 3, 0.8, 0)
+    TabIndicator.Position = UDim2.new(0, 0, 0.1, 0)
+    TabIndicator.BackgroundColor3 = Theme.Accent
+    TabIndicator.BorderSizePixel = 0
+    TabIndicator.Visible = false
 
     local Page = Instance.new("Frame", PageContainer)
     Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.Visible = false
@@ -179,18 +216,24 @@ local function CreateTab(Name)
     LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() LeftCol.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 120) end)
     RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() RightCol.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 120) end)
 
-    TabBtn.MouseButton1Click:Connect(function()
+    HitboxBtn.MouseButton1Click:Connect(function()
         for _, p in pairs(Pages) do p.Visible = false end
-        for _, b in pairs(TabButtons) do b.TextColor3 = Theme.DarkText; b:FindFirstChildWhichIsA("Frame").Visible = false end
-        Page.Visible = true; TabBtn.TextColor3 = Color3.new(1,1,1); TabIndicator.Visible = true
+        for _, data in pairs(TabData) do 
+            data.Icon.ImageColor3 = Theme.DarkText
+            data.Indicator.Visible = false 
+        end
+        Page.Visible = true
+        TabIcon.ImageColor3 = Color3.new(1, 1, 1)
+        TabIndicator.Visible = true
     end)
 
-    table.insert(Pages, Page); table.insert(TabButtons, TabBtn)
+    table.insert(Pages, Page)
+    table.insert(TabData, {Icon = TabIcon, Indicator = TabIndicator})
     return LeftCol, RightCol
 end
 
 -- =============================================
--- ELEMENTOS COM MARGEM DE SEGURANÇA E NOVO DESIGN
+-- ELEMENTOS DA INTERFACE (TÍTULOS EM BRANCO)
 -- =============================================
 local function CreateSectionLabel(Parent, Text)
     local Lbl = Instance.new("TextLabel", Parent)
@@ -261,7 +304,7 @@ local function CreateDropdown(Parent, Name, Options, DefaultIndex, Callback)
     end
 end
 
--- NOVO ESTILO DE SLIDER (BARRA GROSSA)
+-- SLIDER ESTILO ROBUSTO (BARRA GROSSA)
 local function CreateSlider(Parent, Name, Min, Max, Default, Callback, Suffix)
     Suffix = Suffix or "" 
     local Frame = Instance.new("Frame", Parent)
@@ -327,10 +370,13 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- === TABS DA UI ===
-local L1, R1 = CreateTab("AIM")
-local L2, R2 = CreateTab("ESP")
-local L3, R3 = CreateTab("MISC")
+-- =============================================
+-- === IMAGENS REDUZIDAS PARA FICAR ELEGANTE ===
+-- =============================================
+-- Largura X, Altura Y (Mais compactas, hitbox inteira mantida)
+local L1, R1 = CreateTab("AIM", 128137609286733, 14, 22)  -- Mouse (Bem delicado)
+local L2, R2 = CreateTab("ESP", 90674527474660, 26, 15)   -- Olho (Mais fino)
+local L3, R3 = CreateTab("MISC", 70777727722441, 20, 20)  -- Engrenagem (Pequena e centralizada)
 
 -- Aba Combat
 CreateSectionLabel(L1, "Combat")
@@ -341,8 +387,7 @@ CreateToggle(L1, "Wall Check", false, function(v) _G.WallCheck = v end)
 CreateSlider(L1, "Max Distance", 1, 3000, 3000, function(v) _G.MaxDistance = v end)
 CreateSlider(L1, "Smoothness", 1, 100, 100, function(v) _G.Smoothness = v / 100 end)
 
--- Dropdowns de Tipo adicionados no Aimbot Settings
-CreateSectionLabel(R1, "Aim Settings")
+CreateSectionLabel(R1, "Aimbot Settings")
 CreateDropdown(R1, "Type Aimbot", {"Aimbot Legit", "Aimbot Rage"}, 1, function(val) _G.AimbotType = val end)
 CreateDropdown(R1, "Type Silent Aim", {"Silent Legit", "Silent Rage"}, 1, function(val) _G.SilentAimType = val end)
 CreateToggle(R1, "Enable Prediction", true, function(v) _G.PredictionEnabled = v end)
@@ -352,7 +397,7 @@ CreateToggle(R1, "Enable FOV", false, function(v) _G.ShowFOV = v end)
 CreateSlider(R1, "FOV Radius", 0, 500, 100, function(v) _G.FOV = v end)
 
 -- Aba Visuals 
-CreateSectionLabel(L2, "Esp Elements")
+CreateSectionLabel(L2, "ESP Elements")
 CreateToggle(L2, "Esp Box", false, function(v) _G.ESP_Box = v end)
 CreateToggle(L2, "Esp Fill Box", false, function(v) _G.ESP_FillBox = v end) 
 CreateToggle(L2, "Esp Skeleton", false, function(v) _G.ESP_Skeleton = v end)
@@ -363,7 +408,7 @@ CreateToggle(L2, "Esp Line", false, function(v) _G.ESP_Tracers = v end)
 CreateToggle(L2, "Esp Team Check", false, function(v) _G.ESP_TeamCheck = v end)
 CreateSlider(L2, "Esp Max Distance", 1, 3000, 3000, function(v) _G.ESP_MaxDistance = v end)
 
-CreateSectionLabel(R2, "Esp Settings")
+CreateSectionLabel(R2, "ESP Config")
 CreateDropdown(R2, "Type Box", {"Box Corner", "Box Normal"}, 1, function(val) _G.ESP_BoxType = val end)
 CreateDropdown(R2, "Type Line", {"Bottom", "Top"}, 1, function(val) _G.ESP_LineType = val end)
 CreateDropdown(R2, "Type Health", {"Top", "Bottom", "Left", "Right"}, 1, function(val) _G.ESP_HealthType = val end)
@@ -382,7 +427,10 @@ CreateToggle(R3, "Enable Magnet FOV", false, function(v) _G.MagnetFOVEnabled = v
 CreateSlider(R3, "Magnet FOV Radius", 0, 500, 100, function(v) _G.MagnetFOV = v end)
 CreateSlider(R3, "Magnet Max Dist", 1, 3000, 500, function(v) _G.MagnetMaxDistance = v end)
 
-TabButtons[1].TextColor3 = Color3.new(1,1,1); TabButtons[1]:FindFirstChildWhichIsA("Frame").Visible = true; Pages[1].Visible = true
+-- Força ativação inicial visual da primeira aba
+TabData[1].Icon.ImageColor3 = Color3.new(1,1,1)
+TabData[1].Indicator.Visible = true
+Pages[1].Visible = true
 
 -- =============================================
 --                 LÓGICA MATEMÁTICA
@@ -623,7 +671,7 @@ RunService:BindToRenderStep("EliteHubMain", Enum.RenderPriority.Camera.Value + 1
 end)
 
 -- =============================================
--- HOOKS DE SILENT AIM (Otimizados: Só leem o cache)
+-- HOOKS DE SILENT AIM
 -- =============================================
 local OldNamecall
 OldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
